@@ -12,6 +12,9 @@ RUN apt-get -q clean -y \
     && rm -rf /var/lib/apt/lists/* \
     && rm -f /var/cache/apt/*.bin
 
+RUN sed -i 's/\;date\.timezone\ \=/date\.timezone\ \=\ America\/Toronto/g' /etc/php/7.0/cli/php.ini && \
+	sed -i 's/\;date\.timezone\ \=/date\.timezone\ \=\ America\/Toronto/g' /etc/php/7.0/fpm/php.ini
+
 ADD php-fpm.conf /etc/php/7.0/fpm/php-fpm.conf
 ADD www.conf /etc/php/7.0/fpm/pool.d/www.conf
 ENV PHP_UID www-data
