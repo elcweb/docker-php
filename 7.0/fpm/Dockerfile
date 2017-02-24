@@ -5,7 +5,7 @@ ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get -q update \
     && apt-get -q install -y -o Dpkg::Options::="--force-confnew"  --no-install-recommends \
     php7.0 php7.0-cli php7.0-curl php-redis php7.0-mysql php7.0-sqlite php7.0-mcrypt php-pear \
-    php7.0-fpm php7.0-json php7.0-xml php7.0-mbstring php7.0-zip php-intl php-gd \
+    php7.0-fpm php7.0-json php7.0-xml php7.0-mbstring php7.0-zip php-intl php-gd php7.0-bcmath \
     git nodejs curl ca-certificates
 
 RUN apt-get -q clean -y \
