@@ -18,6 +18,9 @@ RUN sed -i -e"s/keepalive_timeout 2/keepalive_timeout 2;\n\tclient_max_body_size
 RUN echo "daemon off;" >> /etc/nginx/nginx.conf
 RUN rm /etc/nginx/sites-enabled/default
 
+RUN mkdir /code
+RUN chown -R www-data.www-data /code
+
 WORKDIR /code
 EXPOSE 80
 CMD ["supervisord", "-n", "-c", "/etc/supervisord.conf"]
@@ -34,7 +37,3 @@ ENV PHP_GID www-data
 
 # Supervisor config
 ADD ./etc/supervisord.conf /etc/supervisord.conf
-
-RUN mkdir /code
-RUN chown -R www-data.www-data /code
-
