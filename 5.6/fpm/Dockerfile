@@ -22,15 +22,14 @@ EXPOSE 9000
 # PHP
 ADD etc/php/php-fpm.conf /etc/php/5.6/fpm/php-fpm.conf
 ADD etc/php/www.conf /etc/php/5.6/fpm/pool.d/www.conf
-ENV PHP_UID www-data
-ENV PHP_GID www-data
-
-# Postfix
-ENV SMTP_ENABLE 0
-ENV SMTP_MYHOSTNAME localhost
-ENV SMTP_HOST null
-ENV SMTP_USER null
-ENV SMTP_PASSWORD null
+ENV PHP_UID=www-data \
+    PHP_GID=www-data \
+    SMTP_ENABLE=0 \
+    SMTP_MYHOSTNAME=localhost \
+    SMTP_HOST=null \
+    SMTP_USER=null \
+    SMTP_PASSWORD=null \
+    PHP_MEMORY_LIMIT=128M
 
 ADD entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
