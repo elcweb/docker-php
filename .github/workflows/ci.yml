@@ -30,7 +30,7 @@ jobs:
           tags: elcweb/php:8-apache
 
       - name: Build PHP 7.4
-        id: docker_build
+        id: docker_build_74
         uses: docker/build-push-action@v2
         with:
           push: true
