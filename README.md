@@ -1,3 +1,5 @@
 # docker-php
 
-[![Scheduled Build](https://github.com/elcweb/docker-php/actions/workflows/schedule.yml/badge.svg)](https://github.com/elcweb/docker-php/actions/workflows/schedule.yml)
+[![PHP-7.4](https://github.com/elcweb/docker-php/actions/workflows/php74.yml/badge.svg)](https://github.com/elcweb/docker-php/actions/workflows/php74.yml)
+[![PHP-8.0](https://github.com/elcweb/docker-php/actions/workflows/php80.yml/badge.svg)](https://github.com/elcweb/docker-php/actions/workflows/php80.yml)
+
