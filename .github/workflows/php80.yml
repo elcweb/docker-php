@@ -7,6 +7,7 @@ on:
       - '*'
     paths:
       - '8.0/**'
+      - '.github/workflows/php80.yml'
   schedule:
     - cron: "0 0 * * 0" # every week
 
