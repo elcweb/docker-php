@@ -30,7 +30,7 @@ jobs:
 
       - name: Build PHP 8.0
         id: docker_build_80
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v2.4.0
         with:
           push: true
           context: ./8.0/apache

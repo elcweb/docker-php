@@ -30,7 +30,7 @@ jobs:
 
       - name: Build PHP 7.4
         id: docker_build_74
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v2.4.0
         with:
           push: true 
           context: ./7.4/apache
