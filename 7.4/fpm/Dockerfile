@@ -9,7 +9,5 @@ RUN apt-get update \
 
 RUN curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/bin/composer
 
-COPY rootfs /
-
 WORKDIR "/code"
 
