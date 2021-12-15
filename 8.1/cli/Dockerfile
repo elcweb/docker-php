@@ -1,4 +1,4 @@
-FROM php:8.0-cli
+FROM php:8-cli
 
 # install some base extensions
 RUN pecl install redis && docker-php-ext-enable redis \
@@ -10,3 +10,4 @@ RUN pecl install redis && docker-php-ext-enable redis \
   && curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/bin/composer
 
 WORKDIR "/code"
+
