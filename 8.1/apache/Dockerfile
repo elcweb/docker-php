@@ -1,8 +1,8 @@
-FROM php:7.4-apache
+FROM php:8.1-apache
 
-#install some base extensions
-RUN pecl install redis && docker-php-ext-enable redis
-RUN apt-get update \
+# install some base extensions
+RUN pecl install redis && docker-php-ext-enable redis \
+  && apt-get update \
   && apt-get install -y libzip-dev zip libicu-dev libgmp-dev libpng-dev \
   && docker-php-ext-configure intl \
   && docker-php-ext-install zip pdo pdo_mysql intl gmp gd opcache \
