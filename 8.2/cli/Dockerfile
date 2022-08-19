@@ -1,8 +1,8 @@
-FROM php:7.4-fpm
+FROM php:8.2.0beta3-cli
 
 # install some base extensions
-RUN pecl install redis && docker-php-ext-enable redis
-RUN apt-get update \
+RUN pecl install redis && docker-php-ext-enable redis \
+  && apt-get update \
   && apt-get install -y libzip-dev zip libicu-dev libgmp-dev libpng-dev libjpeg-dev libmagickwand-dev \
   && docker-php-ext-configure intl \
   && docker-php-ext-configure gd --with-jpeg=/usr/include \
