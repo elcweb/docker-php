@@ -1,4 +1,4 @@
-FROM php:7.4-fpm
+FROM php:8.2-fpm
 
 # install some base extensions
 RUN pecl install redis && docker-php-ext-enable redis
