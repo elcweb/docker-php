@@ -1,4 +1,4 @@
-FROM php:8.2.0beta3-cli
+FROM php:8.2-cli
 
 # install some base extensions
 RUN pecl install redis && docker-php-ext-enable redis \
