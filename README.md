@@ -11,6 +11,7 @@ Extensions:
 - pdo_mysql
 - redis
 - zip
+- sodium
 
 Software:
 - composer
