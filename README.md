@@ -21,3 +21,4 @@ Code should be deploy in the `/code` folder
 
 ## Supported PHP Versions
 This repository follow the [PHP Supported Version](https://www.php.net/supported-versions.php)
+
