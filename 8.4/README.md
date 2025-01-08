@@ -1,3 +1,4 @@
-# 8.4 is an Alpha version
+# PHP 8.4
 
-Also don't contain the redis extension.
+https://www.php.net/releases/8.4/en.php
+

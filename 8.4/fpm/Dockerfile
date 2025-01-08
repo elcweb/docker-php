@@ -1,4 +1,4 @@
-FROM php:8.4.0alpha4-fpm
+FROM php:8.4-fpm
 
 # install some base extensions
 RUN apt-get update \
