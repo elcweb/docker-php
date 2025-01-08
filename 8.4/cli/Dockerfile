@@ -1,4 +1,4 @@
-FROM php:8.4.0alpha4-cli
+FROM php:8.4-cli
 
 # install some base extensions
 RUN apt-get update \
