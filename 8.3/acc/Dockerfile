@@ -19,7 +19,7 @@ RUN apt-get update \
     && apt-get install -y wget cron pdftk unixodbc-dev \
     && chmod uga+x /usr/local/bin/install-php-extensions \
     && sync \
-    && install-php-extensions odbc pcntl pdo_odbc memcached memcache pdo_mysql mcrypt yaml zip soap mailparse opcache xsl sockets mysqli msgpack igbinary gettext exif calendar bz2 sqlsrv pdo_sqlsrv \
+    && install-php-extensions odbc pcntl pdo_odbc memcached memcache pdo_mysql mcrypt yaml zip soap mailparse opcache xsl sockets mysqli msgpack igbinary gettext exif calendar bz2 sqlsrv pdo_sqlsrv pcov \
     && apt-get clean all
 
 COPY rootfs /
