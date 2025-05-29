@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         flavor: [ acc ]
-        php_version: [ '8.3', '8.4' ]
+        php_version: [ '8.4' ]
 
     runs-on: ubuntu-latest
     env:
@@ -35,7 +35,7 @@ jobs:
         id: docker_build
         uses: docker/build-push-action@v5
         with:
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           push: true 
           context: ./${{ matrix.php_version }}/${{ matrix.flavor }}
           tags: ${{ env.DOCKER_IMAGE }}-${{ matrix.flavor }}
