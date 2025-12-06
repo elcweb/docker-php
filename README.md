@@ -7,8 +7,9 @@ This repo will install
 Extensions:
 - gd
 - intl
-- obcache
+- opcache
 - pdo_mysql
+- pdo_psql
 - redis
 - zip
 - sodium
