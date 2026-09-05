@@ -1,6 +1,9 @@
  # PHP Docker
 
-![Build](https://github.com/elcweb/docker-php/actions/workflows/build.yml/badge.svg)
+[![Docker Pulls](https://img.shields.io/docker/pulls/elcweb/php)](https://hub.docker.com/r/elcweb/php)
+[![Docker Image Size](https://img.shields.io/docker/image-size/elcweb/php/latest)](https://hub.docker.com/r/elcweb/php)
+[![License: MIT](https://img.shields.io/github/license/elcweb/docker-php)](https://github.com/elcweb/docker-php/blob/main/LICENSE)
+[![CI](https://img.shields.io/github/actions/workflow/status/elcweb/docker-php/build.yml?branch=main)](https://github.com/elcweb/docker-php/actions)
 
 ## Installed extensions/software
 This repo will install
