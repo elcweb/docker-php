@@ -8,7 +8,7 @@ RUN apt-get update \
   && docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
   && docker-php-ext-install zip pdo pdo_mysql pdo_pgsql intl gmp gd sodium \
   && pecl install redis \
-  && docker-php-ext-enable redis
+  && docker-php-ext-enable redis \
   && useradd --home /code --no-create-home --uid 1000 dev \
   && curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/bin/composer \
   && a2enmod rewrite
