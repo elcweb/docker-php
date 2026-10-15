@@ -1,7 +1,9 @@
 FROM php:8.5-apache
 
 # install some base extensions
-RUN apt-get update \
+RUN rm -rf /usr/local/etc/php/* \
+  && mkdir -p /usr/local/etc/php/conf.d \
+  && apt-get update \
   && apt-get install -y libzip-dev zip libicu-dev libgmp-dev libpng-dev libjpeg-dev libmagickwand-dev libsodium-dev \
   && docker-php-ext-configure intl \
   && docker-php-ext-configure gd --with-jpeg=/usr/include \
@@ -17,12 +19,12 @@ RUN apt-get update \
     && apt-get install -y wget cron pdftk \
     && chmod uga+x /usr/local/bin/install-php-extensions \
     && sync \
-    && install-php-extensions pcntl yaml zip soap mailparse xsl sockets msgpack igbinary gettext exif calendar bz2 pcov \
+    && install-php-extensions pcntl yaml zip soap mailparse xsl sockets msgpack igbinary gettext exif calendar bz2 pcov timezonedb \
     && apt-get clean all
 
 COPY rootfs /
 
-RUN rm /etc/ssl/openssl.cnf && rm -rf /usr/local/etc/php/*
+RUN rm /etc/ssl/openssl.cnf
 RUN usermod -u 48 www-data
 
 WORKDIR "/code"

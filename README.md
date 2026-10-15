@@ -18,6 +18,7 @@ Extensions:
 - pdo_mysql
 - pdo_psql
 - redis
+- timezonedb
 - zip
 - sodium
 
