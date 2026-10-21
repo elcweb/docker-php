@@ -1,5 +1,8 @@
 FROM php:8.5-cli
 
+# Validate the PHP version contains the required security fix
+RUN php -r 'if (version_compare(PHP_VERSION, "8.5.12", "<")) { fwrite(STDERR, "ERROR: PHP >= 8.5.12 required for security fix, got " . PHP_VERSION . "\n"); exit(1); }'
+
 # install some base extensions
 RUN apt-get update \
   && apt-get install -y libzip-dev zip libicu-dev libgmp-dev libpng-dev libjpeg-dev libmagickwand-dev libsodium-dev libpq-dev \
