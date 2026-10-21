@@ -7,12 +7,13 @@ RUN php -r 'if (version_compare(PHP_VERSION, "8.4.27", "<")) { fwrite(STDERR, "E
 RUN rm -rf /usr/local/etc/php/* \
   && mkdir -p /usr/local/etc/php/conf.d \
   && apt-get update \
-  && apt-get install -y libzip-dev zip libicu-dev libgmp-dev libpng-dev libjpeg-dev libmagickwand-dev libsodium-dev \
+  && apt-get install -y libzip-dev zip unzip libicu-dev libgmp-dev libpng-dev libjpeg-dev libmagickwand-dev libsodium-dev \
   && docker-php-ext-configure intl \
   && docker-php-ext-configure gd --with-jpeg=/usr/include \
   && docker-php-ext-install zip pdo pdo_mysql intl gmp gd opcache sodium \
-  && pecl install redis \
-  && docker-php-ext-enable redis \
+  && curl -fsSL -o /tmp/pie.phar https://github.com/php/pie/releases/latest/download/pie.phar \
+  && php /tmp/pie.phar install phpredis/phpredis \
+  && rm /tmp/pie.phar \
   && useradd --home /code --no-create-home --uid 1000 dev \
   && curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/bin/composer \
   && a2enmod rewrite
