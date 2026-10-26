@@ -85,11 +85,14 @@ RUN buildDeps=" \
 	&& cd / \
 	&& docker-php-source delete
 
-COPY docker-php-ext-* /usr/local/bin/
+COPY docker-php-ext-* docker-php-entrypoint /usr/local/bin/
+
+ENTRYPOINT ["docker-php-entrypoint"]
+# https://httpd.apache.org/docs/2.4/stopping.html#gracefulstop
+STOPSIGNAL SIGWINCH
 
 COPY apache2-foreground /usr/local/bin/
 WORKDIR /var/www/html
 
 EXPOSE 80
 CMD ["apache2-foreground"]
-
