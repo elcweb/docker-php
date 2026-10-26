@@ -1,7 +1,7 @@
-FROM docker.io/debian/eol:stretch
+FROM debian:bookworm-slim
 
 # persistent / runtime deps
-RUN apt-get update && apt-get install -y ca-certificates curl libxml2 --no-install-recommends && rm -r /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y ca-certificates curl libxml2 xz-utils --no-install-recommends && rm -r /var/lib/apt/lists/*
 
 # phpize deps
 RUN apt-get update && apt-get install -y autoconf gcc make pkg-config --no-install-recommends && rm -r /var/lib/apt/lists/*
@@ -30,6 +30,16 @@ RUN gpg --batch --keyserver hkps://keyserver.ubuntu.com --recv-keys 6E4F6AB321FD
 
 ENV PHP_VERSION=5.6.40
 
+# PHP 5.6 doesn't compile cleanly with GCC 12; also picked up by docker-php-ext-configure/install for extensions
+ENV PHP_CFLAGS="-O2 -std=gnu99 -fpermissive -fsigned-char -fno-strict-aliasing -Wno-error=incompatible-pointer-types -Wno-deprecated-declarations -DOPENSSL_SUPPRESS_DEPRECATED"
+ENV PHP_CPPFLAGS=""
+ENV PHP_LDFLAGS=""
+
+# Security backports from deb.sury.org, see patches/series
+COPY patches /usr/src/php-patches
+
+COPY docker-php-source /usr/local/bin/
+
 # --enable-mysqlnd is included below because it's harder to compile after the fact the extensions are (since it's a plugin for several extensions, not an extension in itself)
 RUN buildDeps=" \
 		$PHP_EXTRA_BUILD_DEPS \
@@ -37,8 +47,9 @@ RUN buildDeps=" \
 		file \
 		libcurl4-openssl-dev \
 		libreadline-dev \
-		libssl1.0-dev \
+		libssl-dev \
 		libxml2-dev \
+		patch \
 		zlib1g-dev \
 	"; \
 	set -x \
@@ -51,6 +62,10 @@ RUN buildDeps=" \
 	&& tar -xf php.tar.bz2 -C /usr/src/php --strip-components=1 \
 	&& rm php.tar.bz2* \
 	&& cd /usr/src/php \
+	&& grep -v '^#' /usr/src/php-patches/series | while read -r p; do patch -p1 -N < "/usr/src/php-patches/$p" || exit 1; done \
+	&& rm -rf /usr/src/php-patches \
+	&& tar -cJf /usr/src/php.tar.xz -C /usr/src php \
+	&& export CFLAGS="$PHP_CFLAGS" CPPFLAGS="$PHP_CPPFLAGS" LDFLAGS="$PHP_LDFLAGS" \
 	&& ./configure \
 		--with-config-file-path="$PHP_INI_DIR" \
 		--with-config-file-scan-dir="$PHP_INI_DIR/conf.d" \
@@ -65,7 +80,10 @@ RUN buildDeps=" \
 	&& make install \
 	&& { find /usr/local/bin /usr/local/sbin -type f -executable -exec strip --strip-all '{}' + || true; } \
 	&& apt-get purge -y --auto-remove $buildDeps \
-	&& make clean
+	&& make clean \
+	&& cp -v php.ini-* "$PHP_INI_DIR/" \
+	&& cd / \
+	&& docker-php-source delete
 
 COPY docker-php-ext-* /usr/local/bin/
 
