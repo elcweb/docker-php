@@ -1,7 +1,7 @@
 FROM debian:bookworm-slim
 
 # persistent / runtime deps
-RUN apt-get update && apt-get install -y ca-certificates curl libxml2 xz-utils --no-install-recommends && rm -r /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y ca-certificates curl libxml2 xz-utils --no-install-recommends && update-ca-certificates && rm -r /var/lib/apt/lists/*
 
 # phpize deps
 RUN apt-get update && apt-get install -y autoconf gcc make pkg-config --no-install-recommends && rm -r /var/lib/apt/lists/*
@@ -86,6 +86,21 @@ RUN buildDeps=" \
 	&& docker-php-source delete
 
 COPY docker-php-ext-* docker-php-entrypoint /usr/local/bin/
+
+# Fail the build if the system trust store still trusts a compromised eMudhra root.
+# https://emudhra.we-have-a-problem.com/
+RUN php -r '$bad = ["d7a7a0fb5d7e2731d771e9484ebcdef71d5f0c3e0a2948782bc83ee0ea699ef4", "86a1ecba089c4a8d3bbe2734c612ba341d813e043cf9e8a862cd5c57a36bbe6b"]; \
+    $f = "/etc/ssl/certs/ca-certificates.crt"; \
+    preg_match_all("/-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----/s", file_get_contents($f), $m); \
+    $fail = 0; \
+    foreach ($m[0] as $c) { \
+      if (in_array(hash("sha256", base64_decode(preg_replace("/-----[^-]+-----|\s/", "", $c))), $bad, true)) { \
+        fwrite(STDERR, "ERROR: compromised eMudhra root still trusted in $f\n"); \
+        $fail = 1; \
+      } \
+    } \
+    printf("%4d certs  %s\n", count($m[0]), $f); \
+    exit($fail);'
 
 ENTRYPOINT ["docker-php-entrypoint"]
 # https://httpd.apache.org/docs/2.4/stopping.html#gracefulstop
