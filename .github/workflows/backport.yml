@@ -39,6 +39,9 @@ jobs:
           push: true 
           context: ./${{ matrix.php_version }}/${{ matrix.flavor }}
           tags: ${{ env.DOCKER_IMAGE }}-${{ matrix.flavor }}
-          cache-from: type=registry,ref=${{ env.DOCKER_IMAGE }}-${{ matrix.flavor }}
-          cache-to: type=inline
+          # Always rebuild from a fresh debian:bookworm-slim. With the layer
+          # cache, the weekly build reused the old apt layers and never picked
+          # up Debian security updates.
+          pull: true
+          no-cache: true
 
