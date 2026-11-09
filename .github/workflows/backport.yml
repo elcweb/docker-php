@@ -22,6 +22,15 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # Register binfmt handlers for arm64. Without them, buildx falls back to
+      # BuildKit's built-in emulator, where perl's $^X points at the running
+      # script instead of /usr/bin/perl. dh_perl re-runs $^X, so the apache2
+      # backport fails with "dh_perl: error: Requested unknown package -i".
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
+        with:
+          platforms: arm64
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
