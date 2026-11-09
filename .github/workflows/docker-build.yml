@@ -1,0 +1,136 @@
+name: Reusable multi-arch build
+
+# Builds each platform on a native runner, pushes it by digest, then merges
+# the digests into one multi-arch manifest under elcweb/php:<version>-<flavor>.
+
+on:
+  workflow_call:
+    inputs:
+      php_versions:
+        description: JSON array of PHP versions, e.g. '["8.4","8.5"]'
+        required: true
+        type: string
+      flavors:
+        description: JSON array of flavors, e.g. '["apache","cli"]'
+        required: true
+        type: string
+      no_cache:
+        description: Pull a fresh base image and skip the layer cache
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      DOCKERHUB_USERNAME:
+        required: true
+      DOCKERHUB_TOKEN:
+        required: true
+
+env:
+  DOCKER_REPO: elcweb/php
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        php_version: ${{ fromJSON(inputs.php_versions) }}
+        flavor: ${{ fromJSON(inputs.flavors) }}
+        platform:
+          - { arch: amd64, runner: ubuntu-latest }
+          - { arch: arm64, runner: ubuntu-24.04-arm }
+
+    runs-on: ${{ matrix.platform.runner }}
+    env:
+      CACHE_SCOPE: ${{ matrix.php_version }}-${{ matrix.flavor }}-${{ matrix.platform.arch }}
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build PHP ${{ matrix.php_version }} - ${{ matrix.flavor }} (${{ matrix.platform.arch }})
+        id: build
+        uses: docker/build-push-action@v7
+        with:
+          context: ./${{ matrix.php_version }}/${{ matrix.flavor }}
+          platforms: linux/${{ matrix.platform.arch }}
+          outputs: type=image,name=${{ env.DOCKER_REPO }},push-by-digest=true,name-canonical=true,push=true
+          pull: ${{ inputs.no_cache }}
+          no-cache: ${{ inputs.no_cache }}
+          cache-from: ${{ !inputs.no_cache && format('type=gha,scope={0}', env.CACHE_SCOPE) || '' }}
+          cache-to: ${{ !inputs.no_cache && format('type=gha,mode=max,scope={0}', env.CACHE_SCOPE) || '' }}
+
+      - name: Export digest
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          mkdir -p "${RUNNER_TEMP}/digests"
+          touch "${RUNNER_TEMP}/digests/${DIGEST#sha256:}"
+
+      - name: Upload digest
+        uses: actions/upload-artifact@v4
+        with:
+          name: digests-${{ matrix.php_version }}-${{ matrix.flavor }}-${{ matrix.platform.arch }}
+          path: ${{ runner.temp }}/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  merge:
+    needs: build
+    # Run even when another matrix entry failed, so one broken image does not
+    # block the others. The digest count check below skips incomplete images.
+    if: ${{ !cancelled() }}
+    strategy:
+      fail-fast: false
+      matrix:
+        php_version: ${{ fromJSON(inputs.php_versions) }}
+        flavor: ${{ fromJSON(inputs.flavors) }}
+
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ matrix.php_version }}-${{ matrix.flavor }}
+
+    steps:
+      - name: Download digests
+        uses: actions/download-artifact@v4
+        with:
+          path: ${{ runner.temp }}/digests
+          pattern: digests-${{ matrix.php_version }}-${{ matrix.flavor }}-*
+          merge-multiple: true
+
+      - name: Check both platforms built
+        working-directory: ${{ runner.temp }}/digests
+        run: |
+          count=$(find . -type f | wc -l)
+          if [ "$count" -ne 2 ]; then
+            echo "::error::Expected 2 digests for ${TAG}, found ${count}. Keeping the existing tag."
+            exit 1
+          fi
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Create manifest list ${{ env.DOCKER_REPO }}:${{ env.TAG }}
+        working-directory: ${{ runner.temp }}/digests
+        run: |
+          sources=()
+          for digest in *; do
+            sources+=("${DOCKER_REPO}@sha256:${digest}")
+          done
+          docker buildx imagetools create -t "${DOCKER_REPO}:${TAG}" "${sources[@]}"
+
+      - name: Inspect image
+        run: docker buildx imagetools inspect "${DOCKER_REPO}:${TAG}"

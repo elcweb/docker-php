@@ -10,47 +10,12 @@ on:
 
 jobs:
   build:
-    strategy:
-      matrix:
-        flavor: [ apache ]
-        php_version: [ '5.6' ]
-
-    runs-on: ubuntu-latest
-    env:
-      DOCKER_IMAGE: elcweb/php:${{ matrix.php_version }}
-
-    steps:
-      - uses: actions/checkout@v7
-
-      # Register binfmt handlers for arm64. Without them, buildx falls back to
-      # BuildKit's built-in emulator, where perl's $^X points at the running
-      # script instead of /usr/bin/perl. dh_perl re-runs $^X, so the apache2
-      # backport fails with "dh_perl: error: Requested unknown package -i".
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v4
-        with:
-          platforms: arm64
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-
-      - name: Login to DockerHub
-        uses: docker/login-action@v4
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Build PHP ${{ matrix.php_version }} - ${{ matrix.flavor }}
-        id: docker_build
-        uses: docker/build-push-action@v7
-        with:
-          platforms: linux/amd64,linux/arm64
-          push: true 
-          context: ./${{ matrix.php_version }}/${{ matrix.flavor }}
-          tags: ${{ env.DOCKER_IMAGE }}-${{ matrix.flavor }}
-          # Always rebuild from a fresh debian:bookworm-slim. With the layer
-          # cache, the weekly build reused the old apt layers and never picked
-          # up Debian security updates.
-          pull: true
-          no-cache: true
-
+    uses: ./.github/workflows/docker-build.yml
+    with:
+      php_versions: '["5.6"]'
+      flavors: '["apache"]'
+      # Always rebuild from a fresh debian:bookworm-slim. With the layer
+      # cache, the weekly build reused the old apt layers and never picked
+      # up Debian security updates.
+      no_cache: true
+    secrets: inherit
