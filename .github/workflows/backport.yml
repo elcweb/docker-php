@@ -13,7 +13,7 @@ jobs:
     uses: ./.github/workflows/docker-build.yml
     with:
       php_versions: '["5.6"]'
-      flavors: '["apache"]'
+      flavors: '["apache", "bookworm"]'
       # Always rebuild from a fresh debian:bookworm-slim. With the layer
       # cache, the weekly build reused the old apt layers and never picked
       # up Debian security updates.
