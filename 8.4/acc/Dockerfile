@@ -3,6 +3,15 @@ FROM php:8.4-apache
 # Validate the PHP version contains the required security fix
 RUN php -r 'if (version_compare(PHP_VERSION, "8.4.27", "<")) { fwrite(STDERR, "ERROR: PHP >= 8.4.27 required for security fix, got " . PHP_VERSION . "\n"); exit(1); }'
 
+# CVE-2026-119618: mod_http2 RCE, fixed in Apache 2.4.71. The php base image can
+# lag behind trixie-security, so upgrade Apache here and fail the build if it is
+# still older than the fixed version.
+RUN apt-get update \
+  && apt-get install -y --only-upgrade apache2 apache2-bin apache2-data apache2-utils \
+  && rm -rf /var/lib/apt/lists/* \
+  && v="$(dpkg-query -W -f='${Version}' apache2-bin)" \
+  && if dpkg --compare-versions "$v" lt 2.4.71; then echo "ERROR: Apache >= 2.4.71 required for CVE-2026-119618, got $v" >&2; exit 1; fi
+
 # install some base extensions
 RUN rm -rf /usr/local/etc/php/* \
   && mkdir -p /usr/local/etc/php/conf.d \
