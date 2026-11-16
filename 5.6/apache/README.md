@@ -10,9 +10,9 @@ This image is for legacy projects that can't move to a supported PHP version yet
 
 | | Official `php:5.6-apache` | This image |
 |---|---|---|
-| Base OS | Debian stretch (EOL) | Debian bookworm (`debian:bookworm-slim`) |
-| Apache | 2.4.25 | 2.4.x from bookworm, or trixie-security's rebuilt for bookworm when it's newer (see [Apache backport](#apache-backport)) |
-| OpenSSL | 1.0.2 | 3.0 |
+| Base OS | Debian stretch (EOL) | Debian trixie (`debian:trixie-slim`) |
+| Apache | 2.4.25 | 2.4.x from trixie |
+| OpenSSL | 1.0.2 | 3.5 |
 | PHP source | php-5.6.40 | php-5.6.40 + 187 patches from deb.sury.org |
 | Security fixes after Jan 2019 | None | Backported, including PHP2Shell (CVE-2026-109618, CVE-2026-109619) |
 | Bundled SQLite | 3.8.10.2 | 3.28.0 |
@@ -35,22 +35,20 @@ Some patches only touch tests or the `NEWS` file. They have no effect on the bui
 - **`0165`, `0166`, `0169` packaging credits**: deb.sury.org branding in `phpinfo()`.
 - **`0001`–`0054` and the build-system patches** (`0057`, `0070`–`0072`, `0077`, `0081`, `0094`, `0134`, `0155`, `0156`, `0162`, `0170`, `0242`–`0247`, `0250`): Debian packaging, autoconf, Windows, and LiteSpeed changes. This build doesn't need them.
 
-## Apache backport
+## Security updates
 
-Debian sometimes fixes Apache in trixie before bookworm. In November 2026, for example, trixie-security had 2.4.69 (DSA-6569-1, 19 CVEs), but bookworm was still on 2.4.68 while the LTS rebase was pending.
-
-To cover that gap, the `apache-backport` stage downloads the latest apache2 source package from trixie-security. It then rebuilds the package on bookworm as `<trixie version>~bpo12+1`, the same way Debian backports are built. Only the source is taken from trixie. The binaries link against bookworm's libraries, and no trixie binary package is installed.
-
-When bookworm ships the same upstream version or newer, the stage builds nothing and the image uses Debian's `apache2` package again. You don't need to change anything when that happens.
-
-The image is also built without the layer cache and with `apt-get upgrade`, so the weekly CI build picks up every bookworm security update.
+The image is built without the layer cache and runs `apt-get upgrade`, so the weekly CI build picks up every trixie security update.
 
 ## Behavior changes
 
 - **Out-of-memory errors end the Apache worker.** When a request goes over `memory_limit`, the PHP2Shell fix calls `_exit(1)` instead of cleaning up, because the cleanup is what the attack exploits. The fatal error is still logged, but the client gets an empty response instead of a 500 page. Expect more worker restarts in the logs.
 - **New INI setting `max_multipart_body_parts`.** Default is `-1`, meaning it's derived from `max_input_vars` + `max_file_uploads`. It limits how many parts a `multipart/form-data` request can have.
-- **OpenSSL 3.0.** Legacy ciphers and weak keys or certificates that OpenSSL 1.x accepted may now be rejected. Check any code that does custom crypto or TLS.
-- **Compiler flags.** PHP 5.6 doesn't compile cleanly with GCC 12, so the build uses relaxed `CFLAGS` (`-std=gnu99 -fpermissive ...`), a subset of the flags sury uses. They're exported as `PHP_CFLAGS`, so `docker-php-ext-install` uses them too.
+- **OpenSSL 3.5.** Legacy ciphers and weak keys or certificates that OpenSSL 1.x accepted may now be rejected. Check any code that does custom crypto or TLS.
+- **Compiler flags.** PHP 5.6 doesn't compile cleanly with GCC 14, so the build uses relaxed `CFLAGS` (`-std=gnu99 -fpermissive ...`), a subset of the flags sury uses. They're exported as `PHP_CFLAGS`, so `docker-php-ext-install` uses them too.
+- **Debian trixie.** Some `-dev` packages that older images used are gone:
+  - `libc-client-dev` was removed from Debian, so `ext/imap` can't be built from Debian packages any more.
+  - `pdftk` is now named `pdftk-java`, which still provides `/usr/bin/pdftk`.
+  - `libssl-dev` used to come in as a dependency of `libc-client-dev`. Extensions that need OpenSSL headers, such as `ftp`, now need it installed explicitly.
 - **Extension helper scripts.** `docker-php-ext-configure`, `docker-php-ext-install`, `docker-php-ext-enable` and `docker-php-source` come from the current [docker-library/php](https://github.com/docker-library/php) version, so `-j`, `--ini-name` and `docker-php-ext-enable` work the same way as on the 8.x images. One local change: `docker-php-ext-enable` writes `extension=foo.so` instead of `extension=foo`, because PHP 5.6 can't load an extension by its bare name. The patched source lives at `/usr/src/php.tar.xz` and is unpacked only while extensions are being built.
 
 ## Updating the patches
