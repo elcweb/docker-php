@@ -1,7 +1,7 @@
 FROM php:8.5-fpm
 
 # Validate the PHP version contains the required security fix
-RUN php -r 'if (version_compare(PHP_VERSION, "8.5.12", "<")) { fwrite(STDERR, "ERROR: PHP >= 8.5.12 required for security fix, got " . PHP_VERSION . "\n"); exit(1); }'
+RUN php -r 'if (version_compare(PHP_VERSION, "8.5.13", "<")) { fwrite(STDERR, "ERROR: PHP >= 8.5.13 required for security fix, got " . PHP_VERSION . "\n"); exit(1); }'
 
 # install some base extensions
 RUN apt-get update \
