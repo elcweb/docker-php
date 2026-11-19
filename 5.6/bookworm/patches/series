@@ -187,3 +187,4 @@
 0262-Fix-repeated-warning-for-file-uploads-limit-exceedin.patch
 0263-Introduce-max_multipart_body_parts-INI.patch
 0264-Add-CVE-2023-0662-to-NEWS.patch
+0265-Fix-GHSA-f6gg-rchx-xw8j-mixed-case-HTTPS-and-FTPS.patch

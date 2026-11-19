@@ -64,6 +64,7 @@ RUN buildDeps=" \
 	&& rm php.tar.bz2* \
 	&& cd /usr/src/php \
 	&& grep -v '^#' /usr/src/php-patches/series | while read -r p; do patch -p1 -N < "/usr/src/php-patches/$p" || exit 1; done \
+	&& grep -v '^#' /usr/src/php-patches/series > /usr/local/share/php-backports \
 	&& rm -rf /usr/src/php-patches \
 	&& tar -cJf /usr/src/php.tar.xz -C /usr/src php \
 	&& export CFLAGS="$PHP_CFLAGS" CPPFLAGS="$PHP_CPPFLAGS" LDFLAGS="$PHP_LDFLAGS" \
