@@ -1,7 +1,7 @@
 FROM php:8.4-cli
 
 # Validate the PHP version contains the required security fix
-RUN php -r 'if (version_compare(PHP_VERSION, "8.4.27", "<")) { fwrite(STDERR, "ERROR: PHP >= 8.4.27 required for security fix, got " . PHP_VERSION . "\n"); exit(1); }'
+RUN php -r 'if (version_compare(PHP_VERSION, "8.4.28", "<")) { fwrite(STDERR, "ERROR: PHP >= 8.4.28 required for security fix, got " . PHP_VERSION . "\n"); exit(1); }'
 
 # install some base extensions
 RUN apt-get update \

@@ -1,7 +1,7 @@
 FROM php:8.4-apache
 
 # Validate the PHP version contains the required security fix
-RUN php -r 'if (version_compare(PHP_VERSION, "8.4.27", "<")) { fwrite(STDERR, "ERROR: PHP >= 8.4.27 required for security fix, got " . PHP_VERSION . "\n"); exit(1); }'
+RUN php -r 'if (version_compare(PHP_VERSION, "8.4.28", "<")) { fwrite(STDERR, "ERROR: PHP >= 8.4.28 required for security fix, got " . PHP_VERSION . "\n"); exit(1); }'
 
 # CVE-2026-119618: mod_http2 RCE, fixed in Apache 2.4.71. The php base image can
 # lag behind trixie-security, so upgrade Apache here and fail the build if it is
