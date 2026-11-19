@@ -1,0 +1,41 @@
+From: Etienne Lachance <estheban@users.noreply.github.com>
+Date: Thu, 19 Nov 2026 17:30:00 -0500
+Subject: Fix GHSA-f6gg-rchx-xw8j: mixed case HTTPS and FTPS
+
+Backport of php/php-src@9c0b44ffd663 (CVE-2026-128064) to PHP 5.6.
+
+The http:// and ftp:// stream wrappers matched URL schemes
+case-insensitively, but only enabled TLS when the character at a fixed
+position was a lowercase 's'. HTTPS://, httpS:// and FTPS:// URLs,
+including redirect targets, were sent in cleartext. Compare the whole
+scheme case-insensitively instead.
+
+The upstream phpt tests are not backported: they rely on
+ServerClientTestCase features that PHP 5.6 does not have.
+---
+ ext/standard/ftp_fopen_wrapper.c  | 2 +-
+ ext/standard/http_fopen_wrapper.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+--- a/ext/standard/ftp_fopen_wrapper.c
++++ b/ext/standard/ftp_fopen_wrapper.c
+@@ -150,7 +150,7 @@
+ 		return NULL;
+ 	}
+ 
+-	use_ssl = resource->scheme && (strlen(resource->scheme) > 3) && resource->scheme[3] == 's';
++	use_ssl = resource->scheme && strcasecmp(resource->scheme, "ftps") == 0;
+ 
+ 	/* use port 21 if one wasn't specified */
+ 	if (resource->port == 0)
+--- a/ext/standard/http_fopen_wrapper.c
++++ b/ext/standard/http_fopen_wrapper.c
+@@ -188,7 +188,7 @@
+ 			zval_dtor(&ztmp);
+ 		}
+ 
+-		use_ssl = resource->scheme && (strlen(resource->scheme) > 4) && resource->scheme[4] == 's';
++		use_ssl = resource->scheme && strcasecmp(resource->scheme, "https") == 0;
+ 		/* choose default ports */
+ 		if (use_ssl && resource->port == 0)
+ 			resource->port = 443;
